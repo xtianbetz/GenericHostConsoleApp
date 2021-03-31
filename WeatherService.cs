@@ -16,13 +16,12 @@ namespace GenericHostConsoleApp
 
         public Task<IReadOnlyList<int>> GetFiveDayTemperaturesAsync()
         {
-            int[] temperatures = new[] { 76, 76, 77, 79, 78 };
-            if (_weatherSettings.Value.Unit.Equals("C", StringComparison.OrdinalIgnoreCase))
+            var temperatures = new[] { 76, 76, 77, 79, 78 };
+            if (!_weatherSettings.Value.Unit.Equals("C", StringComparison.OrdinalIgnoreCase))
+                return Task.FromResult<IReadOnlyList<int>>(temperatures);
+            for (var i = 0; i < temperatures.Length; i++)
             {
-                for (int i = 0; i < temperatures.Length; i++)
-                {
-                    temperatures[i] = (int)Math.Round((temperatures[i] - 32) / 1.8);
-                }
+                temperatures[i] = (int)Math.Round((temperatures[i] - 32) / 1.8);
             }
 
             return Task.FromResult<IReadOnlyList<int>>(temperatures);

@@ -27,7 +27,8 @@ namespace GenericHostConsoleApp
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogDebug($"Starting with arguments: {string.Join(" ", Environment.GetCommandLineArgs())}");
+            _logger.LogDebug("Starting with arguments: {Args}",
+                string.Join(" ", Environment.GetCommandLineArgs()));
 
             _appLifetime.ApplicationStarted.Register(() =>
             {
@@ -35,10 +36,11 @@ namespace GenericHostConsoleApp
                 {
                     try
                     {
-                        IReadOnlyList<int> temperatures = await _weatherService.GetFiveDayTemperaturesAsync();
-                        for (int i = 0; i < temperatures.Count; i++)
+                        var temperatures = await _weatherService.GetFiveDayTemperaturesAsync();
+                        for (var i = 0; i < temperatures.Count; i++)
                         {
-                            _logger.LogInformation($"{DateTime.Today.AddDays(i).DayOfWeek}: {temperatures[i]}");
+                            _logger.LogInformation("{DayOfWeek}: {Temp}", 
+                                DateTime.Today.AddDays(i).DayOfWeek, temperatures[i]);
                         }
 
                         _exitCode = 0;
@@ -53,7 +55,7 @@ namespace GenericHostConsoleApp
                         // Stop the application once the work is done
                         _appLifetime.StopApplication();
                     }
-                });
+                }, cancellationToken);
             });
 
             return Task.CompletedTask;
@@ -61,7 +63,7 @@ namespace GenericHostConsoleApp
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogDebug($"Exiting with return code: {_exitCode}");
+            _logger.LogDebug("Exiting with return code: {ExitCode}", _exitCode);
 
             // Exit code may be null if the user cancelled via Ctrl+C/SIGTERM
             Environment.ExitCode = _exitCode.GetValueOrDefault(-1);
